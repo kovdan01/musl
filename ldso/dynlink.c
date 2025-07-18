@@ -554,7 +554,11 @@ static void do_relocs(struct dso *dso, size_t *rel, size_t rel_size, size_t stri
 				reloc_addr[0] = (size_t)__tlsdesc_dynamic;
 				reloc_addr[1] = (size_t)new;
 			} else {
+#if __has_feature(ptrauth_intrinsics) && !__has_feature(ptrauth_elf_got)
+				reloc_addr[0] = (size_t)__builtin_ptrauth_strip(&__tlsdesc_static, 0);
+#else
 				reloc_addr[0] = (size_t)__tlsdesc_static;
+#endif
 #ifdef TLS_ABOVE_TP
 				reloc_addr[1] = tls_val + def.dso->tls.offset
 					+ TPOFF_K + addend;
